@@ -81,8 +81,9 @@ void loop(){
       Serial.printf(req);
 
       if(client_rq.indexOf("/4/off") >= 0 && client_rq.indexOf("\n") >= 0){
-        int current_status = check_home_appliance_status(Home_appliance_1);
-        if(current_status == 1){
+        Home_appliance_1_state = check_home_appliance_status(Home_appliance_1);
+        Serial.println("should turn off");
+        if(Home_appliance_1_state == 1){
           switch_appliance(Home_appliance_1);
         }else{
           continue;
@@ -90,8 +91,9 @@ void loop(){
       }
       
       if(client_rq.indexOf("/4/on") >= 0 && client_rq.indexOf("\n") >= 0){
-        int current_status = check_home_appliance_status(Home_appliance_1);
-        if(current_status == 0){
+        Home_appliance_1_state = check_home_appliance_status(Home_appliance_1);
+        Serial.println("should turn on");
+        if(Home_appliance_1_state == 0){
           switch_appliance(Home_appliance_1);
         }else{
           continue;
@@ -113,24 +115,35 @@ void loop(){
 
 String prepareHtmlPage(){
   Home_appliance_1_state = check_home_appliance_status(Home_appliance_1);
-  String htmlPage ="HTTP/1.1 200 OK\r\n";
-  htmlPage +="Content-Type: text/html\r\n";
-  htmlPage +="Connection: close\r\n";
-  htmlPage +="\r\n" ;
-  htmlPage +="<!DOCTYPE HTML><head><meta name='viewport' content='width=device-width, initial-scale=1'></head>";
+  Serial.println("");
+  Serial.println("");
+  Serial.printf("home atsta 1 is %d",Home_appliance_1_state);
+  Serial.println("");
+  Serial.println("");
+
+  //this block of code does not need to change
+
+  String htmlPage ="<!DOCTYPE HTML><head><meta name='viewport' content='width=device-width, initial-scale=1'></head>";
   htmlPage +="<html>" ;
   htmlPage +="<p>LIVE PREVIEW-------------</p><p></p><p></p><p></p>";
   htmlPage +="<p style='font-family:garamond;font-size:14px;font-style:italic;'>";
   htmlPage += "home_appliance-1&nbsp;&nbsp;&nbsp;&nbsp; ";
   if(Home_appliance_1_state == 1){
-    htmlPage += "<i id='home_ap_1'>on!</i>&nbsp;&nbsp;&nbsp;&nbsp;";
-  }else if(Home_appliance_1_state == 0){
-    htmlPage += "<i id='home_ap_1'>off</i>&nbsp;&nbsp;&nbsp;&nbsp;";
+    htmlPage += "<i id='home_ap_1'>on!</i>&nbsp;&nbsp;&nbsp;&nbsp;<a href='http://192.168.4.1/4/off' id='button_1'><button  onclick='myFunction_1()'>switch</button> </a>  ";
   }
-  htmlPage += "total used power-- &nbsp;&nbsp;&nbsp;&nbsp;total run time---&nbsp;&nbsp;&nbsp;&nbsp;<a id='button_1'><button  onclick='myFunction_1()'>switch</button></a>";
-  htmlPage +="<script> function myFunction_1() {alert('switching -1',);var button_1 = document.getElementById('home_ap_1');if (button_1.innerHTML === 'off') {button_1.innerHTML = 'on!';} else {button_1.innerHTML = 'off';}}</script>";
+  if(Home_appliance_1_state == 0){
+    htmlPage += "<i id='home_ap_1'>off</i>&nbsp;&nbsp;&nbsp;&nbsp;<a href='http://192.168.4.1/4/on' id='button_1'><button  onclick='myFunction_1()'>switch</button> </a>  ";
+  }
+
+  
+  htmlPage += "<script> function myFunction_1() {var button_1 = document.getElementById('home_ap_1');if (button_1.innerHTML == 'off') {button_1.innerHTML = 'on!';console.log(document.getElementById('button_1').href);} else {console.log(document.getElementById('button_1').href);button_1.innerHTML = 'off';}}</script>";
+ 
+
+
+
   htmlPage +="</body></html>";
   htmlPage += "\r\n";
+  Home_appliance_1_state = check_home_appliance_status(Home_appliance_1);
   return htmlPage;
 }
 
